@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "baseer"
-version = "0.0.1"
+version = "0.0.2"
 description = "BASEER AI - Arabic Image Captioning with Arabic culture object and landmark detection"
 authors = ["Abdulmalik <reex4des@gmail.com>", "Saud <cs.saud.alashrah@gmail.com>"]
 readme = "README.md"
@@ -22,7 +22,7 @@ torch = "^1.7.1"
 pillow = "^9.5.0"
 clip = { git = "https://github.com/openai/CLIP.git" }
 salesforce-lavis = "^1.0.2"
-numpy = "^1.24.3"
+numpy = "^1.20"
 
 [tool.poetry.dependencies.en_core_web_lg]
 url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_lg-3.5.0/en_core_web_lg-3.5.0.tar.gz"
