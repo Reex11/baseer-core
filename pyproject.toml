@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "baseer"
-version = "0.0.2"
+version = "0.0.3"
 description = "BASEER AI - Arabic Image Captioning with Arabic culture object and landmark detection"
 authors = ["Abdulmalik <reex4des@gmail.com>", "Saud <cs.saud.alashrah@gmail.com>"]
 readme = "README.md"

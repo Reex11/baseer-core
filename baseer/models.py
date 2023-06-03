@@ -7,10 +7,21 @@ from PIL import Image
 
 class BLIPModel(object):
 
-    def __init__(self):
-
+    def __init__(self,device='gpu'):
         print("Loading BLIP...")
-        self.device = torch.device("cuda")
+
+        if (device in ['gpu','cuda','GPU','CUDA']):
+            if torch.cuda.is_available():
+                self.device = torch.device('cuda')
+            else:
+                self.device = torch.device('cpu')
+                print(f"[!] GPU/CUDA device is not available! Using CPU instead.")
+        elif device in ['cpu','CPU']:
+            self.device = torch.device('cpu')
+        else:
+            raise ValueError(f"Invalid device: {device}, please use 'gpu' or 'cpu'.")
+
+
         # loads BLIP caption base model, with finetuned checkpoints on MSCOCO captioning dataset.
         # this also loads the associated image processors
         blip_model, blip_processors, _ = load_model_and_preprocess(
@@ -33,17 +44,26 @@ class BLIPModel(object):
 
 class CLIPModel(object):
 
-    def __init__(self):
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-        print(f"Using {device} device")
+    def __init__(self,device='gpu'):
         print("Loading CLIP...")
-        clip_model, clip_preprocess = clip.load("ViT-B/32", device=device)
+
+        if (device in ['gpu','cuda','GPU','CUDA']):
+            if torch.cuda.is_available():
+                self.device = "cuda"
+            else:
+                self.device = "cpu"
+                print(f"[!] GPU/CUDA device is not available! Using {self.device} device instead.")
+        elif(device in ['cpu','CPU']):
+            self.device = 'cpu'
+        else:
+            raise ValueError(f"Invalid device: {device}, please use 'gpu' or 'cpu'.")
+        
+        clip_model, clip_preprocess = clip.load("ViT-B/32", device=self.device)
 
         print("CLIP loaded.")
 
         self.model = clip_model
         self.preprocess = clip_preprocess
-        self.device = device
 
     def predict(self,image, sentences, return_probs=False): # NEEDS REVIEW, UNUSED VARS, CPU?
         image = self.preprocess(image).unsqueeze(0).to(self.device)
