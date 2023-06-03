@@ -1,0 +1,37 @@
+فنجان,coffee cup
+بيالة,cup
+مبخرة,smoke
+بخور,incense
+عود,oud
+دهن,brown glass
+برحي,yellow date
+سجادة,pray rug
+محراب,curtain
+سجود,prostration
+صلاة,people praying
+تمر,dates
+نفود,desert
+حطب,wood
+عسيب,plant
+مرقة,soup
+عش بلبل,food
+كبسة,rice
+ثوب,robe
+شماغ,scarf
+عقال,black circle object
+نعال,sandal
+زبيرية,sandal
+ورق عنب,brown food
+مرقوق,food
+مطازيز,food
+جريش,food
+كبدة,food
+شكشوكة,food
+كراث,green grass
+بقلاوة,baklava
+بسبوسة,sweets
+سمبوسة,triangle food
+كبة,food
+نجر,golden cup
+كشتة,desert camp
+معصوب,food
