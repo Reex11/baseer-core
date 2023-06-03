@@ -33,13 +33,20 @@ class Baseer:
     objects_data_path = os.path.join(os.path.dirname(__file__), 'data/objects.txt')
 
     def __init__(self,device='gpu'):
-        if (device == 'gpu'):
-            self.device = torch.device("cuda")
+        if (device in ['gpu','cuda','GPU','CUDA']):
+            if torch.cuda.is_available():
+                self.device = 'gpu'
+            else:
+                self.device = 'cpu'
+                print(f"[!] GPU/CUDA device is not available! Using CPU instead.")
+        elif device in ['cpu','CPU']:
+            self.device = 'cpu'
+            print('[!] Using CPU device by choice.')
         else:
-            self.device = torch.device(device)
+            raise ValueError(f"Invalid device: {device}, please use 'gpu' or 'cpu'.")
         
-        self.BLIP_model = models.BLIPModel()
-        self.CLIP_model = models.CLIPModel()
+        self.BLIP_model = models.BLIPModel(self.device)
+        self.CLIP_model = models.CLIPModel(self.device)
 
         # self.blip_model, self.blip_processors = models.BLIPModel().load()
         # self.clip_model, self.clip_preprocess = models.CLIPModel().load()
