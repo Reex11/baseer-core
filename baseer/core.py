@@ -32,6 +32,8 @@ class Baseer:
 
     objects_data_path = os.path.join(os.path.dirname(__file__), 'data/objects.txt')
 
+    ignore_list_path = os.path.join(os.path.dirname(__file__), 'data/ignore_list.txt')
+
     def __init__(self,device='gpu'):
         if (device in ['gpu','cuda','GPU','CUDA']):
             if torch.cuda.is_available():
@@ -55,6 +57,7 @@ class Baseer:
         self.nlp = spacy.load("en_core_web_lg")
         
         self.load_objects_data()
+        self.load_ignore_list()
 
     def set_img(self, img_path):
         img = Image.open(img_path)
@@ -70,6 +73,7 @@ class Baseer:
         if image is None:
             image = self.img
         return self.CLIP_model.predict(image, sentences, return_probs)
+    
 
     # def blip_predict(self): # predicts caption
     #     image = self.blip_processors["eval"](self.img).unsqueeze(0).to(self.device)
@@ -119,6 +123,13 @@ class Baseer:
         self.objects_list_ar = [word[0] for word in self.objects_list]
         self.objects_list_en = [word[1] for word in self.objects_list]
 
+    def load_ignore_list(self, path=None):
+        if path is None:
+            path = self.ignore_list_path
+        with open(path, "r") as f:
+            ignore_list = f.readlines()
+        self.ignore_list = [word.strip() for word in ignore_list]
+
     def nlp_object_extractor(self,doc,method = 'nltk_nouns'):
         if (method == 'nltk_nouns'):
             doc = self.nlp(doc)
@@ -127,20 +138,42 @@ class Baseer:
             doc = self.nlp(doc)
             return [chunk.text for chunk in doc.noun_chunks]
         
+    # def remove_unwanted_words(self,doc,unwanted_words_path):
+    #     with open(unwanted_words_path, "r") as f:
+    #         unwanted_words = f.readlines()
+
+    #     # remove unwanted words/sentences
+    #     unwanted_words = [word.strip() for word in unwanted_words] 
+    #     print(f"Unwanted words: {unwanted_words}")
+    #     for word in unwanted_words:
+    #         doc = doc.replace(word,'')
+    #     return doc
+        
+        
+
     def magic_a(self,similar_num=5):
 
         original_caption = self.BLIP_model.predict(self.img)
+
+        # # remove unwanted words
+        # original_caption = self.remove_unwanted_words(original_caption, self.unwanted_words_path)
+
         best_caption = original_caption
-        
-        nouns = self.nlp_object_extractor(original_caption,'nltk_full_phrase')
+
+        nouns = self.nlp_object_extractor(best_caption,'nltk_full_phrase')
 
         print("Generating nouns and looping:")
         for noun in nouns:
+            if noun in self.ignore_list:
+                continue
             print("\n\n")
             print(f'————————— Noun: {noun} ')
 
             # top_n_similar_nouns compares the (Extracted English noun) with the English objects in the list and returns the list of [Arabic,English] terms
             top_n_similar_nouns = [(w[0], self.nlp(noun).similarity(self.nlp(w[1])) * 100) for w in self.objects_list]
+
+            # [ print((w[0], self.nlp(noun).similarity(self.nlp(w[1])) * 100)) for w in self.objects_list ]
+
             top_n_similar_nouns.sort(key=lambda x: x[1], reverse=True)
 
             # take the top n similar words
@@ -155,12 +188,19 @@ class Baseer:
             print(best_caption.replace(noun, "{noun}"))
             for term in top_n_similar_nouns:
                 test_captions.append(best_caption.replace(noun, term[0]))
-                # print(test_captions[-1])
+                
+                
+            
 
             # compare using clip
             print("—— CLIP Comparison:")
             clip_results = self.CLIP_model.predict(self.img, test_captions, True)
+            
+            # boosting english term
+            clip_results[0][0] = clip_results[0][0] * 1.5
+
             print(np.array(clip_results), end='\n\n')
+
 
             # the best option in iteration
             best_caption = test_captions[np.argmax(clip_results)]

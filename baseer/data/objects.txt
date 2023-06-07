@@ -3,11 +3,10 @@
 مبخرة,smoke
 بخور,incense
 عود,oud
-دهن,brown glass
 برحي,yellow date
 سجادة,pray rug
 محراب,curtain
-سجود,prostration
+سجود,kneel
 صلاة,people praying
 تمر,dates
 نفود,desert
@@ -18,20 +17,21 @@
 كبسة,rice
 ثوب,robe
 شماغ,scarf
-عقال,black circle object
-نعال,sandal
-زبيرية,sandal
-ورق عنب,brown food
+عقال,oqal
+نعال,footwear
+زبيرية,footwear
+ورق عنب,sooshi
 مرقوق,food
 مطازيز,food
 جريش,food
 كبدة,food
 شكشوكة,food
-كراث,green grass
 بقلاوة,baklava
 بسبوسة,sweets
-سمبوسة,triangle food
-كبة,food
-نجر,golden cup
-كشتة,desert camp
+سمبوسة,food
+كشتة,camp
 معصوب,food
+نقاب,face cover
+دلة,coffee pot
+برحي,fruit
+تمر,fruit
