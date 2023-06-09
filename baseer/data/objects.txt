@@ -3,8 +3,8 @@
 مبخرة,smoke
 بخور,incense
 عود,oud
-برحي,yellow date
-سجادة,pray rug
+برحي,yellow fruit
+سجادة,praying rug
 محراب,curtain
 سجود,kneel
 صلاة,people praying
@@ -18,7 +18,6 @@
 ثوب,robe
 شماغ,scarf
 عقال,oqal
-نعال,footwear
 زبيرية,footwear
 ورق عنب,sooshi
 مرقوق,food

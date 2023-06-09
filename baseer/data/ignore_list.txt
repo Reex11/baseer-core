@@ -7,11 +7,19 @@ pile of
 a pile
 a group of people
 a group of men
+a group of women
+a group of kids
 group of people
 group of men
+group of women
+group of kids
 a group of
 group of
 a group
 people
 a tray
+a man
+men
+women
+kids
 
