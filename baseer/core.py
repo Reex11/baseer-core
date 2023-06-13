@@ -29,6 +29,7 @@ class Baseer:
     # Variables
     # img, blip_model, blip_processors, clip_model, clip_preprocess,
     # objects_data_path, objects_list, objects_list_ar, objects_list_en
+    # ignore_list_path, ignore_list
 
     objects_data_path = os.path.join(os.path.dirname(__file__), 'data/objects.txt')
 
@@ -50,8 +51,6 @@ class Baseer:
         self.BLIP_model = models.BLIPModel(self.device)
         self.CLIP_model = models.CLIPModel(self.device)
 
-        # self.blip_model, self.blip_processors = models.BLIPModel().load()
-        # self.clip_model, self.clip_preprocess = models.CLIPModel().load()
         nltk.download('punkt')
         nltk.download('averaged_perceptron_tagger')
         self.nlp = spacy.load("en_core_web_lg")
@@ -74,28 +73,6 @@ class Baseer:
             image = self.img
         return self.CLIP_model.predict(image, sentences, return_probs)
     
-
-    # def blip_predict(self): # predicts caption
-    #     image = self.blip_processors["eval"](self.img).unsqueeze(0).to(self.device)
-    #     # generate caption
-    #     result = self.blip_model.generate({"image": image})
-    #     return result[0]
-
-    # def clip_predict(self, sentences, return_probs=False): # predicts most relevant sentence
-    #     image = self.clip_preprocess(self.img).unsqueeze(0).to(self.device)
-    #     text = clip.tokenize(sentences).to(self.device)
-
-    #     with torch.no_grad():
-    #         image_features = self.clip_model.encode_image(image)
-    #         text_features = self.clip_model.encode_text(text)
-
-    #         logits_per_image, logits_per_text = self.clip_model(image, text)
-    #         probs = logits_per_image.softmax(dim=-1).cpu().numpy()
-        
-    #     if return_probs:
-    #         return probs
-    #     else:
-    #         return sentences[probs.argmax()]
 
     def translate(self,text,method = 'translator',to_lang="ar"):
         if (method == 'translator'):
@@ -137,84 +114,76 @@ class Baseer:
         elif (method == 'nltk_full_phrase'): # extract full phrase nouns
             doc = self.nlp(doc)
             return [chunk.text for chunk in doc.noun_chunks]
-        
-    # def remove_unwanted_words(self,doc,unwanted_words_path):
-    #     with open(unwanted_words_path, "r") as f:
-    #         unwanted_words = f.readlines()
 
-    #     # remove unwanted words/sentences
-    #     unwanted_words = [word.strip() for word in unwanted_words] 
-    #     print(f"Unwanted words: {unwanted_words}")
-    #     for word in unwanted_words:
-    #         doc = doc.replace(word,'')
-    #     return doc
-        
-        
 
-    def magic_a(self,similar_num=5):
+    def magic_a(self,similar_num=5,verbose=True):
 
         original_caption = self.BLIP_model.predict(self.img)
-
-        # # remove unwanted words
-        # original_caption = self.remove_unwanted_words(original_caption, self.unwanted_words_path)
 
         best_caption = original_caption
 
         nouns = self.nlp_object_extractor(best_caption,'nltk_full_phrase')
 
-        print("Generating nouns and looping:")
+        if verbose:
+            print("Generating nouns and looping:")
         for noun in nouns:
             if noun in self.ignore_list:
                 continue
-            print("\n\n")
-            print(f'————————— Noun: {noun} ')
+            if verbose:
+                print("\n\n")
+                print(f'————————— Noun: {noun} ')
 
             # top_n_similar_nouns compares the (Extracted English noun) with the English objects in the list and returns the list of [Arabic,English] terms
             top_n_similar_nouns = [(w[0], self.nlp(noun).similarity(self.nlp(w[1])) * 100) for w in self.objects_list]
 
-            # [ print((w[0], self.nlp(noun).similarity(self.nlp(w[1])) * 100)) for w in self.objects_list ]
+            if verbose >= 2:
+                [ print((w[0], self.nlp(noun).similarity(self.nlp(w[1])) * 100)) for w in self.objects_list ]
 
             top_n_similar_nouns.sort(key=lambda x: x[1], reverse=True)
 
             # take the top n similar words
             top_n_similar_nouns = top_n_similar_nouns[:similar_num]
-            print(f'—— Top {similar_num} similar words:')
-            [print(term[0],end=" ") for term in top_n_similar_nouns]
-            print()
+            if verbose:
+                print(f'—— Top {similar_num} similar words:')
+                [print(term[0],end=" ") for term in top_n_similar_nouns]
+                print(noun)
             
             # inject Arabic words
-            print(f'—— Caption:')
+            if verbose:
+                print(f'—— Caption:')
+                print(best_caption.replace(noun, "{noun}"))
             test_captions = [best_caption]
-            print(best_caption.replace(noun, "{noun}"))
             for term in top_n_similar_nouns:
                 test_captions.append(best_caption.replace(noun, term[0]))
                 
-                
-            
-
             # compare using clip
-            print("—— CLIP Comparison:")
+            if verbose:
+                print("—— CLIP Comparison:")
             clip_results = self.CLIP_model.predict(self.img, test_captions, True)
             
             # boosting english term
-            clip_results[0][0] = clip_results[0][0] * 1.5
-
-            print(np.array(clip_results), end='\n\n')
+            clip_results[0][0] = clip_results[0][0] + 0.3
+            if verbose:
+                print(np.array(clip_results), end='\n\n')
 
 
             # the best option in iteration
             best_caption = test_captions[np.argmax(clip_results)]
-            print(f'—— Updated the caption to:\n{best_caption}')
+            if verbose:
+                print(f'—— Updated the caption to:\n{best_caption}')
 
         # translate to Arabic
-        print(f'—— Translating to Arabic:')
-        print(best_caption)
+        if verbose:
+            print(f'—— Translating to Arabic:')
+            print(best_caption)
         best_caption = self.translate(best_caption)
-        print(best_caption)
+        if verbose:
+            print(best_caption)
 
         return best_caption
     
-    def predict(self,method='magic_a'):
-        print(f"Predicting Using ({method})...")
+    def predict(self,method='magic_a',verbose=True):
+        if verbose:
+            print(f"Predicting Using ({method})...")
         prediction_method = getattr(self, method)
-        return prediction_method()
+        return prediction_method(verbose=verbose)
